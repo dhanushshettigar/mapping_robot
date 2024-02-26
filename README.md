@@ -57,6 +57,12 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
+Before running the Docker Compose file, you need to allow connections to the X server on your local machine. Run the following command on your local machine:
+
+```bash
+xhost +local:
+```
+
 **Step 3** Launch the nodes using the provided launch file:
 
 ```bash
