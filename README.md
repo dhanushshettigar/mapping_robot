@@ -10,6 +10,107 @@ Parameters passed to nodes allow for easy customization and reconfiguration.
 Designed for seamless integration into ROS 2 projects for robotics and automation applications.
 
 ## Dependencies:
+
+### Setting up the docker environment
+
+Navigate to your host workspace where you have **Dockerfile** and **docker-compose.yml** file.
+
+**Step 1** Change the contents of the `Dockerfile` as shown here and save the file
+
+```bash
+sudo nano Dockerfile
+```
+
+```bash
+# This is an auto generated Dockerfile for ros:ros-base
+# generated from docker_images_ros2/create_ros_image.Dockerfile.em
+FROM ros:iron-ros-core-jammy
+
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    python3-colcon-common-extensions \
+    python3-colcon-mixin \
+    python3-rosdep \
+    python3-vcstool \
+    && rm -rf /var/lib/apt/lists/*
+
+# bootstrap rosdep
+RUN rosdep init && \
+  rosdep update --rosdistro $ROS_DISTRO
+
+# setup colcon mixin and metadata
+RUN colcon mixin add default \
+      https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml && \
+    colcon mixin update && \
+    colcon metadata add default \
+      https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
+    colcon metadata update
+
+# install ros2 packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-iron-ros-base=0.10.0-3* \
+    && rm -rf /var/lib/apt/lists/*
+
+# install packages require by us
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nano \
+    python3-serial \
+    ros-iron-rviz2 \
+    libogre-1.12.dev \
+    python3-pygame \
+    && rm -rf /var/lib/apt/lists/*
+
+```
+
+**Step 2** Change the contents of the `docker-compose.yml` as shown here and save the file
+
+```bash
+sudo nano docker-compose.yml
+```
+
+```bash
+version: "3.9"
+services:
+ ros2:
+   build: .
+   network_mode: host
+   environment:
+    - DISPLAY=${DISPLAY}
+   volumes:
+    - /home/ros:/home/ros
+    - /tmp/.X11-unix:/tmp/.X11-unix
+   devices:
+    - /dev/dri:/dev/dri
+    - /dev/ttyUSB0:/dev/ttyUSB0
+    - /dev/ttyACM0:/dev/ttyACM0
+   tty: true
+```
+
+**Step 3** Rebuild the docker image
+
+```bash
+docker compose build --no-cache
+```
+**Step 4** Run the docker image
+
+```bash
+docker compose up -d
+```
+**Step 5** Copy the Container ID
+
+```bash
+docker ps
+```
+**Step 6** Open Container Terminal
+
+*Replace `<container_id>` with copied container id
+
+```bash
+docker exec -it <container_id> /bin/bash
+```
+
 **1.** `ros2_serial_arduino` package for Arduino communication. [Click here to clone](https://github.com/dhanushshettigar/ros2_serial_arduino.git)
 
 **2.** `sllidar_ros2 package` for LiDAR interaction. [Click here to clone](https://github.com/Slamtec/sllidar_ros2.git)
